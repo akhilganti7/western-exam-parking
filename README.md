@@ -6,10 +6,6 @@ No parking pass? Pick your exam building, day, start time and exam length. The a
 
 **Live app:** https://akhilganti7.github.io/western-exam-parking/
 
-[![Watch the 100-second demo](docs/demo-thumb.jpg)](docs/demo.mp4)
-
-**[Watch the demo video](docs/demo.mp4)** (1:40, 1080p, 6 MB)
-
 ![Desktop screenshot](docs/screenshot.png)
 
 ## Why I built it
