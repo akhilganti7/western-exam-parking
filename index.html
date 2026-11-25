@@ -183,6 +183,14 @@ html.calm #map .r3,html.calm .lights.on i{animation:none}
 .honkbox b{color:var(--ink)}.honkbox ol{margin:6px 0 0;padding-left:20px}
 .appx{display:block;font-size:12px;color:var(--warn);font-weight:500;margin-top:2px}
 .mini{margin:6px 0 0;font-size:13px;color:var(--mute)}
+.lenv{margin-left:auto;font:800 22px "Saira Condensed",sans-serif;color:var(--ink)}
+#len{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:none;border:0;padding:0;margin:0;cursor:pointer}
+#len::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--red) var(--p,66%),#2a313b var(--p,66%))}
+#len::-moz-range-track{height:8px;border-radius:4px;background:#2a313b}#len::-moz-range-progress{height:8px;border-radius:4px;background:var(--red)}
+#len::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-9px;border-radius:50%;background:#fff;border:4px solid var(--red);box-shadow:0 0 0 4px rgba(255,59,48,.25)}
+#len::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--red)}
+#len:focus{outline:none}#len:focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:8px}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:-6px;padding:0 4px}
 .filters{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:0 0 12px;overflow:hidden}
 .fhead{width:100%;display:flex;justify-content:space-between;align-items:center;font:800 19px "Saira Condensed",sans-serif;color:var(--ink);background:none;border:0;min-height:48px;padding:6px 14px}
 .fhead em{font:700 12px Saira,sans-serif;font-style:normal;background:var(--red);color:#fff;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px}
@@ -223,7 +231,7 @@ input[type=range]{min-height:36px;padding:0;background:none;border:0;accent-colo
    <div class="f"><div class="lab"><b>1</b>Exam building</div><input id="q" autocomplete="off" placeholder="Type a name or code, like MC or Ivey" aria-autocomplete="list" aria-controls="sugg" role="combobox" aria-expanded="false"><ul id="sugg" role="listbox"></ul><div class="chips recent" id="recent"></div></div>
    <div class="f"><div class="lab"><b>2</b>Exam day</div><div class="row"><span class="chips" id="days"></span><input type="date" id="date" aria-label="Exam date"></div></div>
    <div class="f"><div class="lab"><b>3</b>Start time</div><div class="row"><span class="chips" id="times"></span><input type="time" id="time" value="09:00" aria-label="Start time"></div></div>
-   <div class="f"><div class="lab"><b>4</b>Exam length</div><div class="chips" id="lens"></div><p class="mini" id="lenhint"></p></div>
+   <div class="f"><div class="lab"><b>4</b>Exam length <strong class="lenv" id="lenv"></strong></div><input type="range" id="len" min="1" max="4" step="0.5" aria-label="Exam length in hours" aria-describedby="lenhint"><div class="ticks" aria-hidden="true"><span>1 hr</span><span>2</span><span>3</span><span>4 hr</span></div><p class="mini" id="lenhint"></p></div>
   </div>
  </div>
 </header>
@@ -324,7 +332,7 @@ if(st.time)$('time').value=st.time;
 $('date').min=ymd(today);
 $('days').innerHTML=`<button class="chip" data-d="${ymd(today)}">Today</button><button class="chip" data-d="${ymd(tmrw)}">Tomorrow</button>`;
 $('times').innerHTML=[['09:00','9 am'],['14:00','2 pm'],['19:00','7 pm']].map(x=>`<button class="chip" data-t="${x[0]}">${x[1]}</button>`).join('');
-$('lens').innerHTML=[2,2.5,3,4].map(x=>`<button class="chip" data-l="${x}">${x} hr</button>`).join('');
+
 $('sorts').innerHTML=[['best','Best'],['walk','Closest'],['cost','Cheapest']].map(x=>`<button class="chip" data-s="${x[0]}">${x[1]}</button>`).join('');
 
 // ---- projection ----
@@ -389,7 +397,7 @@ function render(fit){
  $('q').value=b.c+' · '+b.n;
  document.querySelectorAll('[data-t]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.t===$('time').value));
  document.querySelectorAll('[data-d]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.d===$('date').value));
- document.querySelectorAll('[data-l]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.l===st.len));
+ $('len').value=st.len;$('lenv').textContent=st.len+' hr';$('len').style.setProperty('--p',((st.len-1)/3*100)+'%');
  document.querySelectorAll('[data-s]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s===st.sort));
  document.querySelectorAll('[data-f]').forEach(x=>x.setAttribute('aria-pressed',!!st.f[x.dataset.f]));
  document.querySelectorAll('[data-show]').forEach(x=>x.setAttribute('aria-pressed',!!st.f.show[x.dataset.show]));
@@ -549,10 +557,10 @@ document.addEventListener('click',e=>{
  const rb=e.target.closest('#recent [data-b]');if(rb){pickB(rb.dataset.b);return}
  const tt=e.target.closest('[data-t]');if(tt){$('time').value=tt.dataset.t;st.sel=null;render(true);return}
  const dd=e.target.closest('[data-d]');if(dd){$('date').value=dd.dataset.d;guardDate();st.sel=null;render(true);return}
- const ll=e.target.closest('[data-l]');if(ll){st.len=+ll.dataset.l;st.sel=null;render(true);return}
  const ss=e.target.closest('[data-s]');if(ss){st.sort=ss.dataset.s;st.sel=null;render(true);return}
  const li=e.target.closest('#list [data-n]');if(li){st.sel=li.dataset.n;render(true);if(innerWidth<1020)fig.scrollIntoView({behavior:RM?'auto':'smooth',block:'center'})}});
 $('list').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.n){st.sel=e.target.dataset.n;render(true)}});
+$('len').addEventListener('input',()=>{st.len=+$('len').value;st.sel=null;render()});$('len').addEventListener('change',()=>fitRoute());
 $('ftoggle').onclick=()=>{st.fopen=!st.fopen;render()};
 ['fwalk','fcost'].forEach(id=>$(id).addEventListener('input',()=>{st.f[id==='fwalk'?'walk':'cost']=+$(id).value;st.sel=null;render()}));
 $('fwalk').addEventListener('change',()=>fitRoute());$('fcost').addEventListener('change',()=>fitRoute());
